@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>₹ Investment Value Calculator</title>
+<style>
+  :root{
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --text:#142033;
+    --muted:#64748b;
+    --line:#e6ebf2;
+    --accent:#2563eb;
+    --accent2:#0f766e;
+    --dark:#0f172a;
+    --success:#15803d;
+    --shadow:0 14px 40px rgba(15,23,42,.08);
+    --radius:20px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:linear-gradient(135deg,#eef4ff 0%,#f8fafc 50%,#edf8f6 100%);
+    color:var(--text);
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 18px 56px}
+  header{text-align:center;margin-bottom:28px}
+  .badge{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:7px 12px;border:1px solid #dbe5f4;background:#fff;
+    border-radius:999px;font-size:13px;color:#355070;font-weight:700;
+  }
+  h1{font-size:clamp(30px,5vw,52px);line-height:1.04;margin:14px 0 10px;letter-spacing:-1.8px}
+  header p{color:var(--muted);max-width:720px;margin:0 auto;font-size:16px}
+  .grid{display:grid;grid-template-columns:390px 1fr;gap:22px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .inputs{padding:24px}
+  .results{padding:22px}
+  .section-title{font-size:18px;font-weight:800;margin:0 0 18px}
+  .field{margin-bottom:16px}
+  label{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:800;margin-bottom:7px}
+  .hint{font-weight:600;color:var(--muted);font-size:12px}
+  input{
+    width:100%;padding:13px 14px;border:1px solid #d7dee9;border-radius:12px;
+    font-size:16px;outline:none;background:#fbfcfe;color:var(--text);transition:.15s;
+  }
+  input:focus{border-color:#8fb0f7;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+  .suffix{position:relative}
+  .suffix input{padding-right:42px}
+  .suffix span{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:800}
+  .primary{
+    width:100%;border:0;border-radius:12px;padding:14px 16px;font-size:16px;font-weight:900;
+    cursor:pointer;color:#fff;background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    box-shadow:0 8px 20px rgba(37,99,235,.25);transition:transform .12s,box-shadow .12s;
+  }
+  .primary:hover{transform:translateY(-1px);box-shadow:0 11px 25px rgba(37,99,235,.30)}
+  .reset{width:100%;margin-top:9px;border:0;background:transparent;color:#64748b;font-weight:800;padding:10px;cursor:pointer}
+  .note{
+    margin-top:14px;padding:11px 12px;border-radius:12px;background:#f8fafc;
+    color:#64748b;font-size:12px;line-height:1.45;border:1px solid #edf1f6
+  }
+
+  .hero{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;
+  }
+  .hero-box{
+    border-radius:16px;padding:18px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;
+  }
+  .hero-box.real{background:linear-gradient(135deg,#0f766e,#115e59)}
+  .kicker{font-size:12px;opacity:.75;text-transform:uppercase;letter-spacing:.7px;font-weight:900}
+  .big{font-size:clamp(25px,4vw,37px);font-weight:950;letter-spacing:-1px;margin-top:8px;word-break:break-word}
+  .sub{font-size:12px;opacity:.75;margin-top:6px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+  .stat{padding:16px;border:1px solid var(--line);border-radius:15px;background:#fff}
+  .stat .label{font-size:12px;color:var(--muted);font-weight:800}
+  .stat .value{font-size:20px;font-weight:950;margin-top:7px}
+  .chart-card{border:1px solid var(--line);border-radius:16px;padding:15px;background:#fff}
+  .chart-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+  .chart-title{font-size:14px;font-weight:900}
+  .legend{font-size:11px;color:var(--muted);font-weight:800}
+  canvas{width:100%;height:285px;display:block}
+  .table-wrap{overflow:auto;margin-top:14px;border:1px solid var(--line);border-radius:15px}
+  table{width:100%;border-collapse:collapse;min-width:640px;font-size:12px}
+  th,td{padding:10px 12px;border-bottom:1px solid #edf1f5;text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  th{background:#f8fafc;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+  tr:last-child td{border-bottom:0}
+  .footer{text-align:center;color:#7a8799;font-size:11px;margin-top:20px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}.inputs{position:relative;top:0}}
+  @media (max-width:620px){
+    .hero{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr}
+    .wrap{padding:20px 12px 40px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="badge">🇮🇳 All values in Indian Rupees (₹)</div>
+    <h1>Investment Value Calculator</h1>
+    <p>See how your monthly investment grows with a monthly step-up and how inflation affects its purchasing power.</p>
+  </header>
+
+  <div class="grid">
+    <section class="card inputs">
+      <h2 class="section-title">Your Investment</h2>
+
+      <div class="field">
+        <label for="sip">Starting Monthly Investment <span class="hint">₹ / month</span></label>
+        <div class="suffix"><input id="sip" type="number" min="0" step="500" value="10000"><span>₹</span></div>
+      </div>
+
+      <div class="field">
+        <label for="step">Monthly Step-Up <span class="hint">% / month</span></label>
+        <div class="suffix"><input id="step" type="number" min="0" step="0.1" value="0.5"><span>%</span></div>
+      </div>
+
+      <div class="field">
+        <label for="returnRate">Expected Annual Return <span class="hint">% / year</span></label>
+        <div class="suffix"><input id="returnRate" type="number" min="-99" step="0.5" value="12"><span>%</span></div>
+      </div>
+
+      <div class="field">
+        <label for="inflation">Annual Inflation <span class="hint">% / year</span></label>
+        <div class="suffix"><input id="inflation" type="number" min="0" step="0.1" value="6"><span>%</span></div>
+      </div>
+
+      <div class="field">
+        <label for="years">Investment Period <span class="hint">years</span></label>
+        <div class="suffix"><input id="years" type="number" min="1" max="100" step="1" value="20"><span>Y</span></div>
+      </div>
+
+      <button class="primary" onclick="calculate()">Calculate Investment Value</button>
+      <button class="reset" onclick="resetForm()">Reset to defaults</button>
+
+      <div class="note">
+        <b>How it works:</b> The SIP increases by your chosen step-up percentage every month.
+        Returns compound monthly. Inflation is applied to the final corpus to show its approximate
+        value in today's money.
+      </div>
+    </section>
+
+    <section class="card results">
+      <div class="hero">
+        <div class="hero-box">
+          <div class="kicker">Future value</div>
+          <div class="big" id="futureValue">₹0</div>
+          <div class="sub">Nominal corpus at the end of the period</div>
+        </div>
+        <div class="hero-box real">
+          <div class="kicker">Inflation-adjusted value</div>
+          <div class="big" id="realValue">₹0</div>
+          <div class="sub">Approximate purchasing power in today's money</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Total invested</div>
+          <div class="value" id="invested">₹0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Estimated gains</div>
+          <div class="value" id="gains">₹0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Ending monthly investment</div>
+          <div class="value" id="endingSip">₹0</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-head">
+          <div class="chart-title">Corpus growth over time</div>
+          <div class="legend">Invested vs. portfolio value</div>
+        </div>
+        <canvas id="chart"></canvas>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Monthly SIP</th>
+              <th>Total Invested</th>
+              <th>Portfolio Value</th>
+              <th>Gain</th>
+            </tr>
+          </thead>
+          <tbody id="schedule"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="footer">For illustration only. Actual investment returns are not guaranteed.</div>
+</div>
+
+<script>
+const INR = new Intl.NumberFormat('en-IN', {
+  style:'currency', currency:'INR', maximumFractionDigits:0
+});
+
+function money(n){
+  if (!Number.isFinite(n)) return '₹0';
+  return INR.format(Math.round(n)).replace('INR','₹');
+}
+
+function val(id){
+  return Number(document.getElementById(id).value) || 0;
+}
+
+function calculate(){
+  const sip0 = Math.max(0, val('sip'));
+  const step = Math.max(0, val('step')) / 100;
+  const annualReturn = val('returnRate') / 100;
+  const inflation = Math.max(0, val('inflation')) / 100;
+  const years = Math.max(1, Math.min(100, Math.floor(val('years')) || 1));
+
+  const months = years * 12;
+  const monthlyReturn = Math.pow(1 + annualReturn, 1/12) - 1;
+
+  let corpus = 0;
+  let invested = 0;
+  let monthlySip = sip0;
+  const points = [];
+  const rows = [];
+
+  for(let m=1; m<=months; m++){
+    invested += monthlySip;
+    corpus = corpus * (1 + monthlyReturn) + monthlySip;
+
+    if(m % 12 === 0 || m === months){
+      const year = Math.ceil(m / 12);
+      points.push({
+        label: 'Y' + year,
+        invested,
+        corpus
+      });
+    }
+    if(m > months - 12 || m % 12 === 0){
+      rows.push({
+        period: 'Month ' + m,
+        sip: monthlySip,
+        invested,
+        corpus,
+        gain: corpus - invested
+      });
+    }
+
+    monthlySip *= (1 + step);
+  }
+
+  const realValue = corpus / Math.pow(1 + inflation, years);
+  const gains = corpus - invested;
+
+  document.getElementById('futureValue').textContent = money(corpus);
+  document.getElementById('realValue').textContent = money(realValue);
+  document.getElementById('invested').textContent = money(invested);
+  document.getElementById('gains').textContent = money(gains);
+  document.getElementById('endingSip').textContent = money(monthlySip);
+
+  renderTable(rows);
+  drawChart(points);
+}
+
+function renderTable(rows){
+  const body = document.getElementById('schedule');
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.period}</td>
+      <td>${money(r.sip)}</td>
+      <td>${money(r.invested)}</td>
+      <td>${money(r.corpus)}</td>
+      <td>${money(r.gain)}</td>
+    </tr>
+  `).join('');
+}
+
+function drawChart(points){
+  const canvas = document.getElementById('chart');
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(300, rect.width);
+  const h = 285;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  const pad = {l:58,r:18,t:18,b:38};
+  const cw = w-pad.l-pad.r, ch = h-pad.t-pad.b;
+  const maxV = Math.max(...points.map(p=>Math.max(p.invested,p.corpus)),1);
+
+  ctx.clearRect(0,0,w,h);
+  ctx.font = '11px Inter, system-ui, sans-serif';
+  ctx.textBaseline = 'middle';
+
+  // Grid
+  for(let i=0;i<=4;i++){
+    const y = pad.t + ch*(i/4);
+    ctx.strokeStyle = '#e9eef5';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+    const value = maxV*(1-i/4);
+    ctx.fillStyle = '#7a8799';
+    ctx.textAlign = 'right';
+    ctx.fillText(shortMoney(value), pad.l-8, y);
+  }
+
+  function x(i){ return pad.l + (points.length===1 ? cw/2 : cw*i/(points.length-1)); }
+  function y(v){ return pad.t + ch*(1-v/maxV); }
+
+  plot('invested','#94a3b8', false);
+  plot('corpus','#2563eb', true);
+
+  // X labels
+  ctx.fillStyle = '#7a8799';
+  ctx.textAlign='center';
+  const stepLabel = Math.max(1, Math.ceil(points.length/8));
+  points.forEach((p,i)=>{
+    if(i % stepLabel === 0 || i === points.length-1){
+      ctx.fillText(p.label, x(i), h-17);
+    }
+  });
+
+  function plot(key,stroke,fillArea){
+    ctx.strokeStyle=stroke; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath();
+    points.forEach((p,i)=>{
+      const px=x(i), py=y(p[key]);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    });
+    ctx.stroke();
+    if(fillArea){
+      ctx.fillStyle='rgba(37,99,235,.08)';
+      ctx.beginPath();
+      points.forEach((p,i)=>{
+        const px=x(i), py=y(p[key]);
+        if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      });
+      ctx.lineTo(x(points.length-1), pad.t+ch);
+      ctx.lineTo(x(0), pad.t+ch);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function shortMoney(v){
+    if(v >= 10000000) return '₹' + (v/10000000).toFixed(1) + 'Cr';
+    if(v >= 100000) return '₹' + (v/100000).toFixed(1) + 'L';
+    if(v >= 1000) return '₹' + (v/1000).toFixed(0) + 'K';
+    return '₹' + Math.round(v);
+  }
+}
+
+function resetForm(){
+  document.getElementById('sip').value=10000;
+  document.getElementById('step').value=0.5;
+  document.getElementById('returnRate').value=12;
+  document.getElementById('inflation').value=6;
+  document.getElementById('years').value=20;
+  calculate();
+}
+
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', calculate));
+window.addEventListener('resize', calculate);
+calculate();
+</script>
+</body>
+</html>
